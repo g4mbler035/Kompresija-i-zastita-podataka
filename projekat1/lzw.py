@@ -3,7 +3,7 @@ from sys import argv
 from struct import *
 
 def encoder(input_file: str, n: int):
-    
+
     maximum_table_size = pow(2,int(n))      
     file = open(input_file)                 
     data = file.read()                      
