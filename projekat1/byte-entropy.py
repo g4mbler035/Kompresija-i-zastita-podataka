@@ -23,7 +23,6 @@ def byte_entropy(object):
         # Well compressed file with gzip -9 (should have high entropy):
         $ byte-entropy xx.gz
         0.976236
-
     """
     fh = None
 
@@ -32,13 +31,13 @@ def byte_entropy(object):
         # TODO: if the file is huge, you may want to mmap only a
         # part of the file, e.g. 10000 bytes in its middle or
         # separate random sections of it.
-        fh = open(object)
-        object = mmap.mmap(fh.fileno(), 0, prot=mmap.PROT_READ)
+        fh = open(object, 'rb')  # Open in binary mode
+        object = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
 
     counts = [0] * _UTF8_DISTINCT_VALUES
     total_count = 0
     for b in object:
-        counts[ord(b)] += 1
+        counts[b] += 1
         total_count += 1
 
     if fh:
@@ -55,7 +54,7 @@ def byte_entropy(object):
 
         # p is the probability of seeing this byte in the file,
         p = 1.0 * count / total_count
-        entropy -= p * math.log(p, _UTF8_DISTINCT_VALUES)
+        entropy -= p * math.log2(p)  # Use base-2 logarithm
 
     return entropy
 
@@ -67,4 +66,4 @@ if __name__ == "__main__":
 
     for object in sys.argv[1:]:
         entropy = byte_entropy(object)
-        print(f"Entorpy of a given file: {entropy}")
+        print(f"Entropy of the given file: {entropy}")
