@@ -1,7 +1,7 @@
 This is a code repo for faculty subject Data compression and protection
 
 Running files:
-python <filename>.py
+python <file_python>.py
 
 P.S.
 fo Byte-Entropy
