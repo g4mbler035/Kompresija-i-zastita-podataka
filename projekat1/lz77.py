@@ -1,5 +1,6 @@
 import math
 import os
+from pathlib import Path
 from bitarray import bitarray
 
 class LZ77Compressor:
@@ -67,6 +68,7 @@ class LZ77Compressor:
 
         if output_file_path:
             try:
+                Path("results/lz77").mkdir(parents=True, exist_ok=True)
                 with open(output_file_path, 'wb') as output_file:
                     output_file.write(output_buffer.tobytes())
                     print("File was compressed successfully and saved to output path ...")
@@ -158,9 +160,9 @@ def calculate_compression_ratio(original_size, compressed_size):
 
 if __name__ == "__main__":
 
-    input_file = "2.txt"
-    encoded_file = "comp.txt"
-    output_file = "decomp.txt"
+    input_file = "test/3.txt"
+    encoded_file = "results/lz77/comp.txt"
+    output_file = "results/lz77/decomp.txt"
 
     lz77 = LZ77Compressor()
 

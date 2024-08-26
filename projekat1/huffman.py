@@ -1,6 +1,7 @@
 import heapq
 from collections import Counter
 import os
+from pathlib import Path
 from bitarray import bitarray
 
 class Node:
@@ -51,24 +52,22 @@ def encode_data(data, huffman_codes):
     return encoded_data
 
 def save_encoded_file(output_filename, huffman_codes, encoded_data):
+    Path("results/huffman").mkdir(parents=True, exist_ok=True)
     with open(output_filename, 'wb') as file:
-        # Save the Huffman codes
         for char, code in huffman_codes.items():
             file.write(char.encode('utf-8'))
             file.write(len(code).to_bytes(1, byteorder='big'))
             file.write(bitarray(code).tobytes())
         
-        # Save a delimiter (e.g., '\0' byte) to separate codes from the encoded data
         file.write(b'\0')
 
-        # Save the encoded data
         encoded_data.tofile(file)
 
 def load_huffman_codes(file):
     huffman_codes = {}
     while True:
         char = file.read(1).decode('utf-8')
-        if char == '\0':  # delimiter found
+        if char == '\0':
             break
         length = int.from_bytes(file.read(1), byteorder='big')
         code = bitarray()
@@ -98,9 +97,9 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 if __name__ == "__main__":
-    filename = "2.txt"
-    encoded_filename = "encoded_output.bin"
-    decoded_filename = "decoded_output.txt"
+    filename = "test/2.txt"
+    encoded_filename = "results/huffman/encoded_output.bin"
+    decoded_filename = "results/huffman/decoded_output.txt"
 
     chars, freq, text = read_file_and_calculate_frequencies(filename)
 

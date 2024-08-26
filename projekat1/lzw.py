@@ -1,7 +1,8 @@
 import os
+from pathlib import Path
 from struct import pack, unpack
 
-def encoder(input_file: str, n: int):
+def encoder(input_file: str, output_filename: str, n: int):
     maximum_table_size = pow(2, int(n))      
     with open(input_file, 'r', encoding='utf-8') as file:
         data = file.read()
@@ -25,8 +26,8 @@ def encoder(input_file: str, n: int):
     if string in dictionary:
         compressed_data.append(dictionary[string])
 
-    out = input_file.split(".")[0]
-    with open(out + ".lzw", "wb") as output_file:
+    Path("results/lzw").mkdir(parents=True, exist_ok=True)
+    with open(output_filename, "wb") as output_file:
         for data in compressed_data:
             output_file.write(pack('>H', int(data)))
 
@@ -70,13 +71,16 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 if __name__ == "__main__":
-    encoder(input_file="2.txt", n=12)
-    decoder(input_file="2.lzw", n=12)
+    input_filename = "test/2.txt"
+    output_filename = "results/lzw/2.lzw"
+
+    encoder(input_file=input_filename, output_filename=output_filename, n=12)
+    decoder(input_file=output_filename, n=12)
 
     print("Encoding and decoding completed successfully.")
 
-    original_size = os.path.getsize("2.txt")
-    compressed_size = os.path.getsize("2.lzw")
+    original_size = os.path.getsize(input_filename)
+    compressed_size = os.path.getsize(output_filename)
     
     ratio = calculate_compression_ratio(original_size, compressed_size)
     print(f"Compression Ratio: {ratio:.2f}")

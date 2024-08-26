@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from collections import Counter
 from bitarray import bitarray
 
@@ -77,6 +78,7 @@ def read_text_from_file(input_file):
         return f.read()
 
 def write_encoded_to_file(encoded_text, encoded_file):
+    Path("results/shanoon").mkdir(parents=True, exist_ok=True)
     with open(encoded_file, 'wb') as f:
         encoded_text.tofile(f)
 
@@ -87,6 +89,7 @@ def read_encoded_from_file(encoded_file):
     return encoded_text
 
 def write_decoded_to_file(decoded_text, output_file):
+    Path("results/shanoon").mkdir(parents=True, exist_ok=True)
     with open(output_file, 'w') as f:
         f.write(decoded_text)
 
@@ -118,13 +121,13 @@ def decode(encoded_file: str, output_file: str, nodes):
 
 def calculate_compression_ratio(original_size, compressed_size):
     if compressed_size == 0:
-        return float('inf')  # Avoid division by zero
+        return float('inf')
     return original_size / compressed_size
 
 def main():
-    input_file = "2.txt"
-    encoded_file = "encoded.bin"
-    output_file = "decoded.txt"
+    input_file = "test/2.txt"
+    encoded_file = "results/shanoon/encoded.bin"
+    output_file = "results/shanoon/decoded.txt"
 
     nodes = encode(input_file, encoded_file)
 
@@ -135,7 +138,6 @@ def main():
     original_size = os.path.getsize(input_file)
     compressed_size = os.path.getsize(encoded_file)
     
-    # Calculate compression ratio
     ratio = calculate_compression_ratio(original_size, compressed_size)
     print(f"Compression Ratio: {ratio:.2f}")
 
