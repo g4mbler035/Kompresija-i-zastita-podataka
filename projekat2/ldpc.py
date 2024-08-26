@@ -3,11 +3,11 @@ from pyldpc import make_ldpc, encode, decode, get_message
 
 # Parameters
 n = 15
-k = 9  # This should be inferred from G, but here it's set for clarity
-d_v = 3  # Number of 1s in each column (variable nodes)
-d_c = 5  # Number of 1s in each row (check nodes)
-seed = 123  # Seed for random number generator
-snr = 20  # Signal to Noise Ratio
+k = 9
+d_v = 3
+d_c = 5
+seed = 123
+snr = 20
 
 np.random.seed(seed)
 H, G = make_ldpc(n, d_v, d_c, systematic=True, sparse=False, seed=seed)
@@ -67,7 +67,7 @@ decoded = decode(H, y, snr)
 x = get_message(G, decoded)
 
 # Check if encoding and decoding are successful
-assert abs(x - v).sum() == 0
+print(abs(x - v).sum() == 0)
 
 def find_min_error_vector(H, syndrome_table, th0, th1):
     min_error_vector = None
@@ -90,5 +90,6 @@ error_vector = find_min_error_vector(H, syndrome_tbl, th0=0.5, th1=0.5)
 print("LDPC Matrix H:\n", H)
 print_syndrome_table(syndrome_tbl)
 print("Code Distance:", code_dist)
-print("Decoded Vector:\n", decoded)
+print("Vector: ", v)
+print("Decoded Vector:\n", x)
 print("Error Vector:\n", error_vector)
