@@ -1,146 +1,143 @@
-# Python3 program for Shannon Fano Algorithm
+import os
+from collections import Counter
+from bitarray import bitarray
 
+class Node:
+    def __init__(self):
+        self.sym = ''
+        self.pro = 0.0
+        self.arr = []
+        self.top = -1
 
-# declare structure node
-class  node :
-    def __init__(self) -> None:
-        # for storing symbol
-        self.sym=''
-        # for storing probability or frequency
-        self.pro=0.0
-        self.arr=[0]*20
-        self.top=0
-p=[node() for _ in range(20)]
-
-# function to find shannon code
 def shannon(l, h, p):
-    pack1 = 0; pack2 = 0; diff1 = 0; diff2 = 0
-    if ((l + 1) == h or l == h or l > h) :
-        if (l == h or l > h):
+    if (l + 1) == h or l == h or l > h:
+        if l == h or l > h:
             return
-        p[h].top+=1
-        p[h].arr[(p[h].top)] = 0
-        p[l].top+=1
-        p[l].arr[(p[l].top)] = 1
-        
+        p[h].top += 1
+        p[h].arr.append(0)
+        p[l].top += 1
+        p[l].arr.append(1)
         return
-    
-    else :
-        for i in range(l,h):
-            pack1 = pack1 + p[i].pro
-        pack2 = pack2 + p[h].pro
-        diff1 = pack1 - pack2
-        if (diff1 < 0):
-            diff1 = diff1 * -1
-        j = 2
-        while (j != h - l + 1) :
-            k = h - j
-            pack1 = pack2 = 0
-            for i in range(l, k+1):
-                pack1 = pack1 + p[i].pro
-            for i in range(h,k,-1):
-                pack2 = pack2 + p[i].pro
-            diff2 = pack1 - pack2
-            if (diff2 < 0):
-                diff2 = diff2 * -1
-            if (diff2 >= diff1):
+    pack1 = pack2 = diff1 = diff2 = 0
+    for i in range(l, h):
+        pack1 += p[i].pro
+    pack2 = p[h].pro
+    diff1 = abs(pack1 - pack2)
+    j = 2
+    while j != h - l + 1:
+        k = h - j
+        pack1 = pack2 = 0
+        for i in range(l, k + 1):
+            pack1 += p[i].pro
+        for i in range(h, k, -1):
+            pack2 += p[i].pro
+        diff2 = abs(pack1 - pack2)
+        if diff2 >= diff1:
+            break
+        diff1 = diff2
+        j += 1
+    k += 1
+    for i in range(l, k + 1):
+        p[i].top += 1
+        p[i].arr.append(1)
+    for i in range(k + 1, h + 1):
+        p[i].top += 1
+        p[i].arr.append(0)
+    shannon(l, k, p)
+    shannon(k + 1, h, p)
+
+def sort_by_probability(n, p):
+    for j in range(1, n):
+        for i in range(n - 1):
+            if p[i].pro > p[i + 1].pro:
+                p[i], p[i + 1] = p[i + 1], p[i]
+
+def encode_text(text, nodes):
+    encoded_text = bitarray()
+    for char in text:
+        for node in nodes:
+            if node.sym == char:
+                encoded_text.extend(node.arr)
                 break
-            diff1 = diff2
-            j+=1
-        
-        k+=1
-        for i in range(l,k+1):
-            p[i].top+=1
-            p[i].arr[(p[i].top)] = 1
-            
-        for i in range(k + 1,h+1):
-            p[i].top+=1
-            p[i].arr[(p[i].top)] = 0
-            
+    return encoded_text
 
-        # Invoke shannon function
-        shannon(l, k, p)
-        shannon(k + 1, h, p)
+def decode_text(encoded_text, nodes):
+    reverse_dict = {''.join(map(str, node.arr)): node.sym for node in nodes}
+    decoded_text = ""
+    code = ""
+    for bit in encoded_text:
+        code += '1' if bit else '0'
+        if code in reverse_dict:
+            decoded_text += reverse_dict[code]
+            code = ""
+    return decoded_text
+
+def read_text_from_file(input_file):
+    with open(input_file, 'r') as f:
+        return f.read()
+
+def write_encoded_to_file(encoded_text, encoded_file):
+    with open(encoded_file, 'wb') as f:
+        encoded_text.tofile(f)
+
+def read_encoded_from_file(encoded_file):
+    encoded_text = bitarray()
+    with open(encoded_file, 'rb') as f:
+        encoded_text.fromfile(f)
+    return encoded_text
+
+def write_decoded_to_file(decoded_text, output_file):
+    with open(output_file, 'w') as f:
+        f.write(decoded_text)
+
+def create_nodes_from_text(text):
+    frequencies = Counter(text)
+    total_chars = sum(frequencies.values())
+    nodes = [Node() for _ in range(len(frequencies))]
+    for i, (sym, freq) in enumerate(frequencies.items()):
+        nodes[i].sym = sym
+        nodes[i].pro = freq / total_chars
+    sort_by_probability(len(nodes), nodes)
+    for i in range(len(nodes)):
+        nodes[i].top = -1
+    shannon(0, len(nodes) - 1, nodes)
+    return nodes
+
+def encode(input_file: str, encoded_file: str):
+    text = read_text_from_file(input_file)
+    nodes = create_nodes_from_text(text)
+    encoded_text = encode_text(text, nodes)
+    write_encoded_to_file(encoded_text, encoded_file)
+
+    return nodes
+
+def decode(encoded_file: str, output_file: str, nodes):
+    encoded_text = read_encoded_from_file(encoded_file)
+    decoded_text = decode_text(encoded_text, nodes)
+    write_decoded_to_file(decoded_text, output_file)
+
+def calculate_compression_ratio(original_size, compressed_size):
+    if compressed_size == 0:
+        return float('inf')  # Avoid division by zero
+    return original_size / compressed_size
+
+def main():
+    input_file = "2.txt"
+    encoded_file = "encoded.bin"
+    output_file = "decoded.txt"
+
+    nodes = encode(input_file, encoded_file)
+
+    decode(encoded_file, output_file, nodes)
+
+    print("Encoding and decoding completed successfully.")
+
+    original_size = os.path.getsize(input_file)
+    compressed_size = os.path.getsize(encoded_file)
     
+    # Calculate compression ratio
+    ratio = calculate_compression_ratio(original_size, compressed_size)
+    print(f"Compression Ratio: {ratio:.2f}")
 
-
-# Function to sort the symbols
-# based on their probability or frequency
-def sortByProbability(n, p):
-    temp=node()
-    for j in range(1,n) :
-        for i in range(n - 1) :
-            if ((p[i].pro) > (p[i + 1].pro)) :
-                temp.pro = p[i].pro
-                temp.sym = p[i].sym
-
-                p[i].pro = p[i + 1].pro
-                p[i].sym = p[i + 1].sym
-
-                p[i + 1].pro = temp.pro
-                p[i + 1].sym = temp.sym
-            
-        
-    
-
-
-# function to display shannon codes
-def display(n, p):
-    print("\n\n\n\tSymbol\tProbability\tCode",end='')
-    for i in range(n - 1,-1,-1):
-        print("\n\t", p[i].sym, "\t\t", p[i].pro,"\t",end='')
-        for j in range(p[i].top+1):
-            print(p[i].arr[j],end='')
-    
-
-
-# Driver code
-if __name__ == '__main__':
-    total = 0
-
-    # Input number of symbols
-    print("Enter number of symbols\t: ",end='')
-    n = 5
-    print(n)
-    i=0
-    # Input symbols
-    for i in range(n):
-        print("Enter symbol", i + 1," : ",end="")
-        ch = chr(65 + i)
-        print(ch)
-
-        # Insert the symbol to node
-        p[i].sym += ch
-    
-
-    # Input probability of symbols
-    x = [0.22, 0.28, 0.15, 0.30, 0.05] 
-    for i in range(n):
-        print("\nEnter probability of", p[i].sym, ": ",end="")
-        print(x[i])
-
-        # Insert the value to node
-        p[i].pro = x[i]
-        total = total + p[i].pro
-
-        # checking max probability
-        if (total > 1) :
-            print("Invalid. Enter new values")
-            total = total - p[i].pro
-            i-=1
-        
-    
-    i+=1
-    p[i].pro = 1 - total
-    # Sorting the symbols based on
-    # their probability or frequency
-    sortByProbability(n, p)
-
-    for i in range(n):
-        p[i].top = -1
-
-    # Find the shannon code
-    shannon(0, n - 1, p)
-
-    # Display the codes
-    display(n, p)
+if __name__ == "__main__":
+    main()

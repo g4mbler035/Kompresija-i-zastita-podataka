@@ -1,21 +1,18 @@
-import sys
+import os
 from struct import pack, unpack
 
 def encoder(input_file: str, n: int):
     maximum_table_size = pow(2, int(n))      
-    with open(input_file, 'r') as file:                 
-        data = file.read()                      
+    with open(input_file, 'r', encoding='utf-8') as file:
+        data = file.read()
 
-    # Building and initializing the dictionary.
     dictionary_size = 256                   
     dictionary = {chr(i): i for i in range(dictionary_size)}    
-    string = ""             # String is null.
-    compressed_data = []    # Variable to store the compressed data.
+    string = ""
+    compressed_data = []
 
-    # Iterating through the input symbols.
-    # LZW Compression algorithm
     for symbol in data:                     
-        string_plus_symbol = string + symbol # Get input symbol.
+        string_plus_symbol = string + symbol
         if string_plus_symbol in dictionary: 
             string = string_plus_symbol
         else:
@@ -28,7 +25,6 @@ def encoder(input_file: str, n: int):
     if string in dictionary:
         compressed_data.append(dictionary[string])
 
-    # Storing the compressed string into a file (byte-wise).
     out = input_file.split(".")[0]
     with open(out + ".lzw", "wb") as output_file:
         for data in compressed_data:
@@ -46,7 +42,6 @@ def decoder(input_file: str, n: int):
             (data, ) = unpack('>H', rec)
             compressed_data.append(data)
 
-    # Building and initializing the dictionary.
     dictionary_size = 256
     dictionary = dict([(x, chr(x)) for x in range(dictionary_size)])
 
@@ -54,8 +49,6 @@ def decoder(input_file: str, n: int):
     decompressed_data = ""
     string = ""
 
-    # Iterating through the codes.
-    # LZW Decompression algorithm
     for code in compressed_data:
         if code not in dictionary:
             dictionary[code] = string + (string[0])
@@ -66,7 +59,24 @@ def decoder(input_file: str, n: int):
                 next_code += 1
         string = dictionary[code]
 
-    # Storing the decompressed string into a file.
     out = input_file.split(".")[0]
-    with open(out + "_decoded.txt", "w") as output_file:
+    with open(out + "_decoded.txt", "w", encoding='utf-8') as output_file:
         output_file.write(decompressed_data)
+
+
+def calculate_compression_ratio(original_size, compressed_size):
+    if compressed_size == 0:
+        return float('inf')
+    return original_size / compressed_size
+
+if __name__ == "__main__":
+    encoder(input_file="2.txt", n=12)
+    decoder(input_file="2.lzw", n=12)
+
+    print("Encoding and decoding completed successfully.")
+
+    original_size = os.path.getsize("2.txt")
+    compressed_size = os.path.getsize("2.lzw")
+    
+    ratio = calculate_compression_ratio(original_size, compressed_size)
+    print(f"Compression Ratio: {ratio:.2f}")

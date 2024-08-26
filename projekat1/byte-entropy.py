@@ -26,18 +26,14 @@ def byte_entropy(object):
     """
     fh = None
 
-    # 1 pass over the object bytes, may be expensive if object is large
     if os.path.exists(object):
-        # TODO: if the file is huge, you may want to mmap only a
-        # part of the file, e.g. 10000 bytes in its middle or
-        # separate random sections of it.
-        fh = open(object, 'rb')  # Open in binary mode
+        fh = open(object)
         object = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
 
     counts = [0] * _UTF8_DISTINCT_VALUES
     total_count = 0
     for b in object:
-        counts[b] += 1
+        counts[b if isinstance(b, int) else ord(b)] += 1
         total_count += 1
 
     if fh:
@@ -47,16 +43,18 @@ def byte_entropy(object):
     entropy = 0.0
 
     for count in counts:
-        # If no bytes of this value were seen in the value,
-        # it doesn't affect the entropy of the file.
         if count == 0:
             continue
 
-        # p is the probability of seeing this byte in the file,
         p = 1.0 * count / total_count
-        entropy -= p * math.log2(p)  # Use base-2 logarithm
+        entropy -= p * math.log2(p)
+    
+    max_entropy = math.log2(_UTF8_DISTINCT_VALUES)
+    normalized_entropy = entropy / max_entropy
 
-    return entropy
+    return normalized_entropy
+
+
 
 
 if __name__ == "__main__":

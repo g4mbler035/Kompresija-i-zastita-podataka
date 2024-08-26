@@ -1,4 +1,5 @@
 import math
+import os
 from bitarray import bitarray
 
 class LZ77Compressor:
@@ -9,7 +10,7 @@ class LZ77Compressor:
 
     def __init__(self, window_size=20):
         self.window_size = min(window_size, self.MAX_WINDOW_SIZE)
-        self.lookahead_buffer_size = 15  # length of match is at most 4 bits
+        self.lookahead_buffer_size = 15
 
     def compress(self, input_file_path, output_file_path=None, verbose=False):
         """
@@ -31,7 +32,6 @@ class LZ77Compressor:
         i = 0
         output_buffer = bitarray(endian='big')
 
-        # read the input file
         try:
             with open(input_file_path, 'rb') as input_file:
                 data = input_file.read()
@@ -43,8 +43,6 @@ class LZ77Compressor:
             match = self.findLongestMatch(data, i)
 
             if match:
-                # Add 1 bit flag, followed by 12 bit for distance, and 4 bit for the length
-                # of the match
                 (bestMatchDistance, bestMatchLength) = match
 
                 output_buffer.append(True)
@@ -57,7 +55,6 @@ class LZ77Compressor:
                 i = i + bestMatchLength
 
             else:
-                # No useful match was found. Add 0 bit flag, followed by 8 bit for the character
                 output_buffer.append(False)
                 output_buffer.frombytes(bytes([data[i]]))
 
@@ -66,10 +63,8 @@ class LZ77Compressor:
 
                 i += 1
 
-        # fill the buffer with zeros if the number of bits is not a multiple of 8
         output_buffer.fill()
 
-        # write the compressed data into a binary file if a path is provided
         if output_file_path:
             try:
                 with open(output_file_path, 'wb') as output_file:
@@ -80,7 +75,6 @@ class LZ77Compressor:
                 print('Could not write to output file path. Please check if the path is correct ...')
                 raise
 
-        # an output file path was not provided, return the compressed data
         return output_buffer
 
     def decompress(self, input_file_path, output_file_path=None):
@@ -140,9 +134,6 @@ class LZ77Compressor:
         best_match_distance = -1
         best_match_length = -1
 
-        # Optimization: Only consider substrings of length 2 and greater, and just
-        # output any substring of length 1 (8 bits uncompressed is better than 13 bits
-        # for the flag, distance, and length)
         for j in range(current_position + 2, end_of_buffer):
             start_index = max(0, current_position - self.window_size)
             substring = data[current_position:j]
@@ -159,3 +150,28 @@ class LZ77Compressor:
         if best_match_distance > 0 and best_match_length > 0:
             return (best_match_distance, best_match_length)
         return None
+
+def calculate_compression_ratio(original_size, compressed_size):
+    if compressed_size == 0:
+        return float('inf')
+    return original_size / compressed_size
+
+if __name__ == "__main__":
+
+    input_file = "2.txt"
+    encoded_file = "comp.txt"
+    output_file = "decomp.txt"
+
+    lz77 = LZ77Compressor()
+
+    lz77.compress(input_file_path=input_file, output_file_path=encoded_file)
+
+    lz77.decompress(input_file_path=encoded_file, output_file_path=output_file)
+
+    print("Encoding and decoding completed successfully.")
+
+    original_size = os.path.getsize(input_file)
+    compressed_size = os.path.getsize(output_file)
+    
+    ratio = calculate_compression_ratio(original_size, compressed_size)
+    print(f"Compression Ratio: {ratio:.2f}")
