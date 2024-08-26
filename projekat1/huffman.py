@@ -54,25 +54,32 @@ def encode_data(data, huffman_codes):
 def save_encoded_file(output_filename, huffman_codes, encoded_data):
     Path("results/huffman").mkdir(parents=True, exist_ok=True)
     with open(output_filename, 'wb') as file:
+        file.write(len(huffman_codes).to_bytes(2, byteorder='big'))
+
         for char, code in huffman_codes.items():
+            # Store each character (1 byte)
             file.write(char.encode('utf-8'))
+            # Store the length of the code (1 byte)
             file.write(len(code).to_bytes(1, byteorder='big'))
+            # Store the actual code (as many bytes as necessary)
             file.write(bitarray(code).tobytes())
-        
+
         file.write(b'\0')
 
         encoded_data.tofile(file)
 
 def load_huffman_codes(file):
     huffman_codes = {}
-    while True:
+    num_codes = int.from_bytes(file.read(2), byteorder='big')
+
+    for _ in range(num_codes):
         char = file.read(1).decode('utf-8')
-        if char == '\0':
-            break
         length = int.from_bytes(file.read(1), byteorder='big')
         code = bitarray()
         code.frombytes(file.read((length + 7) // 8))
         huffman_codes[code.to01()[:length]] = char
+
+    file.read(1)
     return huffman_codes
 
 def decode_data(encoded_data, huffman_codes):
@@ -89,7 +96,6 @@ def decode_data(encoded_data, huffman_codes):
 def save_decoded_file(output_filename, decoded_data):
     with open(output_filename, 'w', encoding='utf-8') as file:
         file.write(decoded_data)
-
 
 def calculate_compression_ratio(original_size, compressed_size):
     if compressed_size == 0:
