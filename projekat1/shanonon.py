@@ -7,45 +7,6 @@ class Node:
     def __init__(self):
         self.sym = ''
         self.pro = 0.0
-        self.arr = []
-        self.top = -1
-
-def shannon(l, h, p):
-    if (l + 1) == h or l == h or l > h:
-        if l == h or l > h:
-            return
-        p[h].top += 1
-        p[h].arr.append(0)
-        p[l].top += 1
-        p[l].arr.append(1)
-        return
-    pack1 = pack2 = diff1 = diff2 = 0
-    for i in range(l, h):
-        pack1 += p[i].pro
-    pack2 = p[h].pro
-    diff1 = abs(pack1 - pack2)
-    j = 2
-    while j != h - l + 1:
-        k = h - j
-        pack1 = pack2 = 0
-        for i in range(l, k + 1):
-            pack1 += p[i].pro
-        for i in range(h, k, -1):
-            pack2 += p[i].pro
-        diff2 = abs(pack1 - pack2)
-        if diff2 >= diff1:
-            break
-        diff1 = diff2
-        j += 1
-    k += 1
-    for i in range(l, k + 1):
-        p[i].top += 1
-        p[i].arr.append(1)
-    for i in range(k + 1, h + 1):
-        p[i].top += 1
-        p[i].arr.append(0)
-    shannon(l, k, p)
-    shannon(k + 1, h, p)
 
 def sort_by_probability(n, p):
     for j in range(1, n):
@@ -54,23 +15,20 @@ def sort_by_probability(n, p):
                 p[i], p[i + 1] = p[i + 1], p[i]
 
 def encode_text(text, nodes):
+    char_to_bits = {node.sym: format(i, '08b') for i, node in enumerate(nodes)}
+    
     encoded_text = bitarray()
     for char in text:
-        for node in nodes:
-            if node.sym == char:
-                encoded_text.extend(node.arr)
-                break
+        encoded_text.extend(char_to_bits[char])
     return encoded_text
 
 def decode_text(encoded_text, nodes):
-    reverse_dict = {''.join(map(str, node.arr)): node.sym for node in nodes}
+    bits_to_char = {format(i, '08b'): node.sym for i, node in enumerate(nodes)}
+    
     decoded_text = ""
-    code = ""
-    for bit in encoded_text:
-        code += '1' if bit else '0'
-        if code in reverse_dict:
-            decoded_text += reverse_dict[code]
-            code = ""
+    for i in range(0, len(encoded_text), 8):
+        byte = encoded_text[i:i+8].to01()  # Get the 8-bit sequence as a string
+        decoded_text += bits_to_char[byte]
     return decoded_text
 
 def read_text_from_file(input_file):
@@ -101,9 +59,6 @@ def create_nodes_from_text(text):
         nodes[i].sym = sym
         nodes[i].pro = freq / total_chars
     sort_by_probability(len(nodes), nodes)
-    for i in range(len(nodes)):
-        nodes[i].top = -1
-    shannon(0, len(nodes) - 1, nodes)
     return nodes
 
 def encode(input_file: str, encoded_file: str):
