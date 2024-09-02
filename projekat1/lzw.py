@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from struct import pack, unpack
 
+
 def encoder(input_file: str, output_filename: str, n: int):
     maximum_table_size = pow(2, int(n))      
     with open(input_file, 'r', encoding='utf-8') as file:
@@ -71,8 +72,9 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 if __name__ == "__main__":
-    input_filename = "test/1.txt"
-    output_filename = "results/lzw/1.lzw"
+    input_filename = "test/2.txt"
+    output_filename = "results/lzw/2.lzw"
+    decoded_filename = input_filename.split(".")[0] + "_decoded.txt"
 
     encoder(input_file=input_filename, output_filename=output_filename, n=12)
     decoder(input_file=output_filename, n=12)
@@ -84,3 +86,4 @@ if __name__ == "__main__":
     
     ratio = calculate_compression_ratio(original_size, compressed_size)
     print(f"Compression Ratio: {ratio:.2f}")
+0

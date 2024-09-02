@@ -27,7 +27,7 @@ def decode_text(encoded_text, nodes):
     
     decoded_text = ""
     for i in range(0, len(encoded_text), 8):
-        byte = encoded_text[i:i+8].to01()  # Get the 8-bit sequence as a string
+        byte = encoded_text[i:i+8].to01()
         decoded_text += bits_to_char[byte]
     return decoded_text
 
@@ -80,7 +80,7 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 def main():
-    input_file = "test/1.txt"
+    input_file = "test/2.txt"
     encoded_file = "results/shanoon/encoded.bin"
     output_file = "results/shanoon/decoded.txt"
 

@@ -88,7 +88,6 @@ class LZ77Compressor:
         data = bitarray(endian='big')
         output_buffer = []
 
-        # read the input file
         try:
             with open(input_file_path, 'rb') as input_file:
                 data.fromfile(input_file)
@@ -160,7 +159,7 @@ def calculate_compression_ratio(original_size, compressed_size):
 
 if __name__ == "__main__":
 
-    input_file = "test/1.txt"
+    input_file = "test/2.txt"
     encoded_file = "results/lz77/comp.txt"
     output_file = "results/lz77/decomp.txt"
 
