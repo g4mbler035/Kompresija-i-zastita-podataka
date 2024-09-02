@@ -11,5 +11,9 @@ Env setting up and running files:
 The results will be in result/ folder, the folder will be created dynamically, for ldpc the result will be presented in terminal.
 All decoded files will be marked as decoded, in separate directories.
 
+For second project, there are 2 files:
+* ldpc.py is implemented using pyldpc library
+* ldpc_raw.py is implemented without additional libraries
+
 P.S.
 lz77 takes a bit longer to execute
