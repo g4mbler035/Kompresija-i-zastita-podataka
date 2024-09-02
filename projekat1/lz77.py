@@ -160,7 +160,7 @@ def calculate_compression_ratio(original_size, compressed_size):
 
 if __name__ == "__main__":
 
-    input_file = "test/3.txt"
+    input_file = "test/1.txt"
     encoded_file = "results/lz77/comp.txt"
     output_file = "results/lz77/decomp.txt"
 

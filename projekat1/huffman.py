@@ -103,7 +103,7 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 if __name__ == "__main__":
-    filename = "test/2.txt"
+    filename = "test/1.txt"
     encoded_filename = "results/huffman/encoded_output.bin"
     decoded_filename = "results/huffman/decoded_output.txt"
 

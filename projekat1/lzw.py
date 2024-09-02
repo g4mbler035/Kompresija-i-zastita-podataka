@@ -71,8 +71,8 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 if __name__ == "__main__":
-    input_filename = "test/2.txt"
-    output_filename = "results/lzw/2.lzw"
+    input_filename = "test/1.txt"
+    output_filename = "results/lzw/1.lzw"
 
     encoder(input_file=input_filename, output_filename=output_filename, n=12)
     decoder(input_file=output_filename, n=12)

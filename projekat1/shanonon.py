@@ -80,7 +80,7 @@ def calculate_compression_ratio(original_size, compressed_size):
     return original_size / compressed_size
 
 def main():
-    input_file = "test/2.txt"
+    input_file = "test/1.txt"
     encoded_file = "results/shanoon/encoded.bin"
     output_file = "results/shanoon/decoded.txt"
 
